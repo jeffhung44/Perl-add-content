@@ -1,18 +1,14 @@
-#If want to add some contentm just type something in the parameter $print_somethings
-#IT can compare the files in DIR ARGV[0], if there has no same content in the file, it will add the content
-
-
 #ARGV[0] Input file DIR;
 #ARGV[1] Output file DIR;
-#execute perl [program] [Input DIR] [Output DIR]
+#execute perl [program] [Input DIR] 
 
 use warnings;
 use strict;
 
 
-
+my $verbose = 1;        #Log on off
 my $dir = $ARGV[0];     #Input files DIR
-my $out_dir = $ARGV[1]; #Output files DIR
+my $out_dir = ".\/rst"; #Output files DIR
 my $dir_handle;
 my $out_dir_handle;
 my $file;
@@ -23,7 +19,10 @@ my $fail_cnt = 0;
 my $success_cnt = 0;
 my @fail_files;
 my @success_files;
-my $print_somethins = "this is add line\nit can add multiple lines\nthird line here\n";      #text need to add in the file
+my $print_something = "`define RAID_SLOT   'h0
+`define RAID_PMP    'h0
+`define RAID_MODE   'h0
+`define RAID_MCNT   'h1";      #text need to add in the file
 
 
 mkdir($out_dir) unless(-d $out_dir); #create outout files dir;
@@ -39,18 +38,18 @@ foreach $file (readdir $dir_handle){
     next if($file =~ /^\./);               #process all folder except . 
     next if($file =~ /^\.\.$/);             #process all folder except ..
     open $file_handle,'<',$file or die " can not open $file : $!\n";
-    $file_out = "$file.new";                #Output file name with suffix .new
+    $file_out = "$file";                #Output file name with suffix .new
     open $file_out_handle, '>>', "$out_dir/$file_out" or die " can not open $file_out :$!\n";
-    print $file_out_handle "this is the first line!\n";    #add some text to first line;
+    #print $file_out_handle "this is the first line!\n";    #add some text to first line;
     
     my $fullstring = do{local $/;<$file_handle>};       ###### Read Full File into String
     open $file_handle,'<',$file or die "can not open $file :$!\n";
-    if ($fullstring =~ m/$print_somethins/g){
+    if ($fullstring =~ m/$print_something/g){
             print "Found same content in: ".$file."\n";
             $fail_cnt++;
             push(@fail_files,$file);
             while(<$file_handle>){
-                print $file_out_handle "print something here\n";
+                #print $file_out_handle "print something here\n";
                 print $file_out_handle $_;
             }
     }
@@ -58,28 +57,30 @@ foreach $file (readdir $dir_handle){
             print "there has no same content in: ".$file."\n";
             $success_cnt++;
             push(@success_files,$file);
+            
+            print $file_out_handle $print_something;
             while(<$file_handle>){
-                print $file_out_handle "it prints something\n";
+                #print $file_out_handle "it prints something\n";
                 print $file_out_handle $_;
             }
-            print $file_out_handle $print_somethins;
+            #print $file_out_handle $print_something;
     }
-
-
-    
-    print $file_out_handle "It can add the line in the bottom\n"
     close $file_out_handle;
 }
     #show log
+    if ($verbose){
     print "list of succesful files: \n";
     print "@success_files","\n";
-    print "success $success_cnt files\n";
     print "list of unprocess files: \n";
     print "@fail_files","\n";
-    print "fail $fail_cnt files\n";
+    }
+    print "process $success_cnt files\n";
+    print "unrocess $fail_cnt files\n";
 
 
     close $dir_handle;
     close $out_dir_handle;
 
-
+    system("rm *.v");
+    system("cp ./rst/*.v ./");
+    system("rm -rf ./rst");
