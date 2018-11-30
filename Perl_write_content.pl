@@ -1,4 +1,3 @@
-
 #ARGV[0]    Input file DIR;
 #ARGV       Content to be add; 
 ##execute perl [program] [Input DIR] [Preserve content before N lines] [Content] [Content] [Content] ...
@@ -54,6 +53,8 @@ foreach $file (readdir $dir_handle){
     next if($file =~ /^\./);               #process all folder except . 
     next if($file =~ /^\.\.$/);             #process all folder except ..
     next if($file =~/new/);
+    next if($file =~ /.sh$/);
+    next if($file =~ /.log$/);
     open $file_handle,'<',"$dir/$file" or die " can not open $file : $!\n";
     my $fullstring = do{local $/;<$file_handle>};       ###### Read Full File into String
     $file_out = "$file";                #Output file name with suffix .new
